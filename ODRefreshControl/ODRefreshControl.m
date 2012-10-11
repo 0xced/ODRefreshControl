@@ -9,6 +9,7 @@
 //
 
 #import "ODRefreshControl.h"
+#import <objc/runtime.h>
 
 #define kTotalViewHeight    400
 #define kOpenedViewHeight   44
@@ -45,6 +46,35 @@
 static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
 {
     return a + (b - a) * p;
+}
+
++ (void)load
+{
+    Class UIRefreshControlClass = objc_allocateClassPair([self superclass], "UIRefreshControl", 0);
+    if (!UIRefreshControlClass)
+        return;
+    
+    Class classes[] = {self, object_getClass(self)};
+    for (unsigned int c = 0; c < sizeof(classes)/sizeof(classes[0]); c++) {
+        unsigned int methodCount = 0;
+        Method *methods = class_copyMethodList(classes[c], &methodCount);
+        for (unsigned int i = 0; i < methodCount; i++) {
+            Method method = methods[i];
+            Class class = c == 0 ? UIRefreshControlClass : object_getClass(UIRefreshControlClass);
+            class_addMethod(class, method_getName(method), method_getImplementation(method), method_getTypeEncoding(method));
+        }
+        free(methods);
+    }
+    
+    unsigned int ivarCount = 0;
+    Ivar *ivars = class_copyIvarList(self, &ivarCount);
+    for (unsigned int i = 0; i < ivarCount; i++) {
+        Ivar ivar = ivars[i];
+        class_addIvar(UIRefreshControlClass, ivar_getName(ivar), sizeof(id), log2(sizeof(id)), ivar_getTypeEncoding(ivar));
+    }
+    free(ivars);
+    
+    objc_registerClassPair(UIRefreshControlClass);
 }
 
 - (id)initInScrollView:(UIScrollView *)scrollView {
@@ -452,6 +482,30 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
             _ignoreInset = NO;
         }];
     }
+}
+
+@end
+
+@implementation UITableViewController (ODRefreshControl)
+
+static const void *ODRefreshControlKey = &ODRefreshControlKey;
+
++ (void)load
+{
+    Method refreshControl = class_getInstanceMethod(self, @selector(od_refreshControl));
+    Method setRefreshControl = class_getInstanceMethod(self, @selector(od_setRefreshControl:));
+    class_addMethod(self, @selector(refreshControl), method_getImplementation(refreshControl), method_getTypeEncoding(refreshControl));
+    class_addMethod(self, @selector(setRefreshControl:), method_getImplementation(setRefreshControl), method_getTypeEncoding(setRefreshControl));
+}
+
+- (ODRefreshControl *)od_refreshControl
+{
+    return objc_getAssociatedObject(self, ODRefreshControlKey);
+}
+
+- (void)od_setRefreshControl:(ODRefreshControl *)refreshControl
+{
+    objc_setAssociatedObject(self, ODRefreshControlKey, [refreshControl initInScrollView:self.tableView], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 @end
