@@ -58,7 +58,10 @@
 				E5013A1F15A43A940035F4A0 /* Frameworks */,
 				E5013A1D15A43A940035F4A0 /* Products */,
 			);
+			indentWidth = 4;
 			sourceTree = "<group>";
+			tabWidth = 4;
+			usesTabs = 0;
 		};
 		E5013A1D15A43A940035F4A0 /* Products */ = {
 			isa = PBXGroup;
