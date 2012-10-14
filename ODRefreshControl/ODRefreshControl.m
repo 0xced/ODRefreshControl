@@ -75,7 +75,25 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
     free(ivars);
     
     objc_registerClassPair(UIRefreshControlClass);
+    
+    Class *UIRefreshControlClassRef = NULL;
+#if TARGET_CPU_ARM
+#warning Find a way to load the $L_OBJC_CLASS_UIRefreshControl value into the UIRefreshControlClassRef variable
+#else
+    asm("mov $L_OBJC_CLASS_UIRefreshControl, %0" : "=r"(UIRefreshControlClassRef));
+#endif
+    if (UIRefreshControlClassRef)
+        *UIRefreshControlClassRef = UIRefreshControlClass;
 }
+
+#if !TARGET_CPU_ARM
+asm(
+".section __DATA,__objc_classrefs,regular,no_dead_strip\n"
+".align   2\n"
+"L_OBJC_CLASS_UIRefreshControl:\n"
+".long    _OBJC_CLASS_$_UIRefreshControl\n"
+);
+#endif
 
 - (id)initInScrollView:(UIScrollView *)scrollView {
     return [self initInScrollView:scrollView activityIndicatorView:nil];
