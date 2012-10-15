@@ -16,11 +16,6 @@
     [super viewDidLoad];
     
     UIRefreshControl *refreshControl = [UIRefreshControl new];
-    if (!refreshControl)
-    {
-        NSLog(@"[UIRefreshControl new] failed, using [NSClassFromString(@\"UIRefreshControl\") new]");
-        refreshControl = [NSClassFromString(@"UIRefreshControl") new];
-    }
     [refreshControl addTarget:self action:@selector(dropViewDidBeginRefreshing:) forControlEvents:UIControlEventValueChanged];
     self.refreshControl = refreshControl;
 }
