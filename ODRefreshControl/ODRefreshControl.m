@@ -92,6 +92,7 @@ asm(
 ".align   2\n"
 "L_OBJC_CLASS_UIRefreshControl:\n"
 ".long    _OBJC_CLASS_$_UIRefreshControl\n"
+".weak_reference _OBJC_CLASS_$_UIRefreshControl\n"
 );
 
 - (id)initInScrollView:(UIScrollView *)scrollView {
